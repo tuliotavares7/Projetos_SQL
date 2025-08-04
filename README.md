@@ -24,7 +24,7 @@ Neste projeto, utilizo o banco de dados Delivery Center: Food & Goods orders in 
   
 Aqui está a figura disponibilizada pelo autor do diagrama de modelo de dados.
 
-
+<img width="1489" height="716" alt="Image" src="https://github.com/user-attachments/assets/a7de357a-d315-4948-bff4-4d24cd05c0b4" />
 Imagem 1: Explicação da tabela. Fonte: https://www.linkedin.com/in/cleibsonalmeida/
 
 #### As perguntas e as respostas
@@ -40,9 +40,10 @@ Qual a taxa de sucesso de entregas (status = “Entregue”) entre freelancers e
 
 A partir da pergunta acima, defini quais colunas precisavam estar presentes no resultado da consulta, e são elas: driver_type, driver_modal, total_entregas, entregas_sucesso, taxa_sucesso_percentual e distancia_media_metros. Para isso, utilizei um LEFT JOIN entre as tabelas tb_act_drivers e tb_act_deliveries, unindo ambas pela chave primária driver_id. A opção pelo LEFT JOIN foi intencional, pois garante que todos os entregadores sejam incluídos no resultado, mesmo aqueles que não realizaram entregas, o que pode indicar inatividade ou baixa demanda.
 
-Zoom image will be displayed
+```
 
-Imagem 2: Consulta SQL para a Pergunta 1
+```
+
 Em seguida, utilizei a função COUNT() para contabilizar o total de entregas por tipo e modal de entregador. Para somar apenas as entregas com status “DELIVERED”, utilizei a função SUM() combinada com a cláusula CASE WHEN. Isso permitiu filtrar apenas os registros bem-sucedidos e calcular, posteriormente, a taxa de sucesso percentual. Para formatar esse percentual com duas casas decimais e notação brasileira, apliquei a função FORMAT() com os parâmetros ‘N2’ e ‘PT-BR’.
 
 Abaixo, destaco um trecho da consulta SQL desenvolvida para responder à pergunta:
@@ -55,9 +56,10 @@ Agrupei os resultados pelas variáveis driver_type e driver_modal, o que permite
 
 A análise dos dados revelou que tanto os entregadores freelancers quanto os operadores logísticos apresentam taxas de sucesso nas entregas extremamente altas, todas superiores a 99,8%, o que indica um desempenho operacional bastante consistente.
 
-Zoom image will be displayed
+```
 
-Imagem 3: Resultado da consulta para a questão 1
+```
+
 Ao segmentar os resultados por tipo de modal, observamos que os freelancers bikers alcançaram uma taxa de sucesso de 99,94%, com um total de 97.500 entregas realizadas. Já os freelancers motoboys, embora com uma taxa ligeiramente inferior (99,81%), concentraram o maior volume de entregas entre todos os perfis analisados, somando mais de 161 mil.
 
 No grupo dos operadores logísticos, os motoboys também apresentaram desempenho elevado, com 99,94% de entregas bem-sucedidas em um universo de mais de 103 mil registros. Por outro lado, os operadores bikers registraram taxa de sucesso de 100%, mas com uma amostra muito pequena (apenas 14 entregas), o que limita a confiabilidade dessa informação para tomada de decisão.
@@ -79,24 +81,34 @@ Para organizar a consulta e facilitar a compreensão, utilizei CTEs (Common Tabl
 
 A primeira CTE, chamada modal, calcula o total de entregas, o valor médio dos pedidos e a distância média percorrida, agrupando os dados por tipo de entregador e modal logístico.
 
+```
 
-Imagem 4: Consulta SQL para a questão 2
+```
+
+
 Já a segunda CTE, analise_faixa_distancia, segmenta as entregas em faixas de distância pré-definidas (de 0–1 km até mais de 10 km), permitindo analisar como o valor médio dos pedidos varia conforme o modal e a distância percorrida.
 
 
-Imagem 5: Consulta SQL para a questão 2
+```
+
+```
+
 Essa estrutura modular com CTEs torna a análise mais clara, possibilitando uma melhor organização lógica dos passos do processamento dos dados.
 
 Por fim, selecionei as variáveis relevantes da CTE analise_faixa_distancia e ordenei os resultados por modal e faixa de distância, facilitando a interpretação dos dados.
 
+```
 
-Imagem 6: Consulta SQL para a questão 3
+```
+
 #### Resposta 2
 
 A análise dos dados revelou padrões interessantes sobre a relação entre o modal logístico, a distância percorrida e o valor médio dos pedidos entregues. Observamos que, para ambos os modais analisados (bikers e motoboys), o valor médio dos pedidos tende a aumentar conforme a distância da entrega se eleva.
 
+```
 
-Imagem 7: Resultado da consulta para a questão 2
+```
+
 No caso dos bikers, o maior volume de entregas concentra-se nas faixas de distância até 3 km, com valores médios de pedido entre R$85,15 e R$90,14. Entretanto, em distâncias maiores, embora o número de entregas diminua consideravelmente, o valor médio dos pedidos cresce de forma significativa, chegando a R$194,54 para entregas acima de 10 km. Isso indica que, mesmo com menos frequência, pedidos mais caros são realizados em rotas mais longas por bikers.
 
 Para os motoboys, o padrão é semelhante, porém com volumes muito superiores de entregas em todas as faixas, destacando-se especialmente a faixa de 1 a 3 km, que concentra 130 mil entregas. O valor médio dos pedidos para motoboys também cresce conforme a distância, atingindo R$176,53 para entregas acima de 10 km e até R$140,10 na faixa de 5 a 10 km, o que é ainda mais expressivo do que o observado para bikers em faixas similares.
@@ -118,9 +130,10 @@ O foco da análise é relacionar o desempenho de vendas com a localização do h
 
 Primeiro, selecionei as colunas cruciais para o resultado final: o estado do hub, o total de pedidos finalizados, a receita bruta (soma do valor dos pedidos), a receita líquida (soma dos pagamentos efetivamente realizados) e o desconto médio aplicado. Para isso, realizei joins entre as tabelas de hubs, lojas, pedidos e pagamentos, utilizando as chaves primárias e estrangeiras correspondentes para garantir a integridade dos dados.
 
-Zoom image will be displayed
+```
 
-Imagem 8: Consulta SQL para a questão 3
+```
+
 Utilizei a cláusula WHERE para filtrar apenas os pedidos com status “FINISHED” e pagamentos com status “paid”, garantindo que a análise considere somente transações concluídas e efetivamente pagas.
 
 Para calcular o desconto médio, utilizei uma expressão condicional que compara o valor pago com o valor do pedido, computando a diferença percentual apenas quando o pagamento foi menor que o pedido e o valor do pedido é válido, o que evita distorções. A média desse percentual foi arredondada e formatada para exibir com duas casas decimais e em notação brasileira.
@@ -132,7 +145,9 @@ O agrupamento foi feito pelo estado do hub, permitindo identificar quais regiõe
 A análise do desempenho dos hubs em diferentes estados revela informações estratégicas valiosas para o negócio.
 
 
-Imagem 9: Resultado da consulta para a questão 3
+```
+
+```
 
 Observamos que o estado de São Paulo (SP) lidera em volume de pedidos, com 179.174 pedidos finalizados, gerando uma receita bruta de aproximadamente R$ 19,89 milhões e receita líquida próxima a R$ 19,67 milhões. O desconto médio aplicado nas vendas em SP é de 24%.
 
@@ -188,6 +203,7 @@ Aqui está a figura disponibilizada pelo autor do modelo de dados.
 
 <img width="2486" height="1496" alt="Image" src="https://github.com/user-attachments/assets/341040f0-dbc3-4566-8689-cbd4ce79d770" />
 Imagem 1: Explicação da tabela. Fonte: https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=product_category_name_translation.csv
+
 As perguntas e as respostas
 
 A seguir, apresento as três perguntas que devem ser respondidas utilizando algumas das tabelas mencionadas acima. Em cada item, trarei a pergunta, a descrição e, em seguida, a respectiva resposta.
@@ -206,28 +222,36 @@ Para isso, utilizei uma CTE (Common Table Expression) chamada customers, que faz
 Nessa etapa, apliquei a função COUNT() para contar quantas vezes o cliente comprou produtos de uma determinada categoria, e SUM() para calcular o valor total gasto nessas compras.
 
 
-Imagem 2: Consulta SQL para a Pergunta 1
+```
+
+```
+
 Em seguida, criei uma segunda CTE chamada rankeamento, onde utilizei a função ROW_NUMBER() com PARTITION BY por customer unique ID e ordenação por quantidade em ordem decrescente e valor total em ordem decrescente. Isso permite identificar, para cada cliente, qual foi a categoria de produto mais comprada, priorizando a quantidade e, em caso de empate, o valor total gasto.
 
-Zoom image will be displayed
+```
 
-Imagem 3: Consulta SQL para a Pergunta 1
+```
+
 Por fim, selecionei apenas os registros com rank igual a 1, ou seja, a categoria mais comprada por cada cliente, tanto em volume quanto em valor. Isso permite obter insights sobre os hábitos de consumo dos clientes e pode ser utilizado para estratégias de personalização, recomendação de produtos ou campanhas de fidelização.
 
-Zoom image will be displayed
+```
 
-Imagem 4: Consulta SQL para a Pergunta 1
+```
+
 A consulta foi salva como uma view chamada vw_produto_mais_comprado_por_cliente, facilitando o reuso em análises futuras.
 
-Zoom image will be displayed
+```
 
-Imagem 5: Consulta SQL para a Pergunta 1
+```
+
 Resposta 1
 
 A análise teve como objetivo identificar a quantidade de compras realizadas por cada cliente, por meio da contagem do número de pedidos registrados na tabela Orders. Além disso, buscou-se calcular o valor total gasto por cada um desses clientes, somando os preços dos produtos presentes em cada pedido, com base nos dados da tabela Order Items. Dessa forma, foi possível mapear o comportamento de compra individual, considerando tanto a frequência quanto o volume financeiro das transações.
 
 
-Imagem 6: Resultado da consulta para a questão 1
+```
+
+```
 
 ### Pergunta, Descrição e Resposta 2
 #### Questão 2
@@ -242,40 +266,49 @@ Como os dados de vendas e pagamentos estão distribuídos entre diferentes tabel
 
 A primeira CTE, chamada Sellers, agrega o valor total de vendas de cada pedido por vendedor, somando os campos price e freight_value (preço do item e valor do frete).
 
-Zoom image will be displayed
+```
 
-Imagem 7: Consulta SQL para a questão 2
+```
+
 Em seguida, a CTE Tipo Pagamento calcula o valor total pago por pedido e por tipo de pagamento (como crédito, boleto ou voucher), agrupando os dados com base no order_id.
 
-Zoom image will be displayed
+```
 
-Imagem 8: Consulta SQL para a questão 2
+```
+
 Na CTE Cruzamento, foi realizada uma junção entre essas duas fontes de informação (vendedores e pagamentos), conectando as CTEs anteriores por order_id e associando cada venda ao tipo de pagamento utilizado.
 
-Zoom image will be displayed
+```
 
-Imagem 9: Consulta SQL para a questão 2
+```
+
 A CTE Tratamento consolida os dados por vendedor, somando os valores totais e discriminando quanto foi pago com cada forma de pagamento, por meio da função CASE WHEN.
 
-Zoom image will be displayed
+```
 
-Imagem 10: Consulta SQL para a questão 2
+```
+
 Por fim, a query final seleciona os dados de cada vendedor, exibindo o valor total vendido e os valores separados por tipo de pagamento, permitindo observar com clareza o perfil de pagamento dos clientes de cada vendedor.
 
-Zoom image will be displayed
+```
 
-Imagem 11: Consulta SQL para a questão 2
+```
+
 Essa estrutura com CTEs facilita a leitura da consulta, além de permitir a reutilização dos dados intermediários para novas análises. O resultado pode ser usado para entender preferências de pagamento por vendedor e apoiar estratégias comerciais ou financeiras.
 
-Zoom image will be displayed
+```
 
-Imagem 12: Consulta SQL para a questão 2
+```
+
 Resposta 2
 
 Nesta questão, o objetivo foi analisar o desempenho de vendas dos vendedores considerando os diferentes tipos de pagamento utilizados pelos clientes. Para isso, foram consolidadas informações de todos os vendedores (identificados por seller_id), detalhando o valor total de vendas de cada um, calculado como a soma do preço dos produtos com o valor do frete.
 
 
-Imagem 13: Resultado da consulta para a questão 2
+```
+
+```
+
 Além disso, as vendas foram segmentadas de acordo com o tipo de pagamento utilizado, como cartão de crédito, boleto, voucher e cartão de débito. Essa estrutura permite compreender não apenas quanto cada vendedor faturou, mas também qual foi a distribuição percentual de seus recebimentos por tipo de pagamento, oferecendo uma visão mais completa sobre o comportamento de consumo e a dependência de cada vendedor em relação aos meios de pagamento.
 
 ### Pergunta, Descrição e Resposta 3
@@ -293,35 +326,37 @@ Para organizar a análise, utilizei Common Table Expressions (CTEs) que facilita
 
 A primeira CTE, chamada sellers, calcula o valor total vendido por cada vendedor em cada categoria de produto. Para isso, ela faz um join entre a tabela de itens vendidos e a tabela de produtos para associar o produto à sua categoria, removendo espaços extras nos IDs para garantir a correspondência correta. Em seguida, agrupa os dados por vendedor e categoria, somando o valor total das vendas (preço mais valor do frete) para cada combinação.
 
-Zoom image will be displayed
+```
 
-Imagem 14: Consulta SQL para a questão 3
+```
 
 A segunda CTE, denominada tratamento, transforma as categorias de produtos em colunas específicas, criando uma visão mais estruturada dos dados. Ela agrupa os valores totais vendidos por categoria para cada vendedor, utilizando expressões condicionais (CASE WHEN) para alocar os valores em colunas como alimentos, construção, eletrodomésticos, fashion, livros, móveis, telefonia, e uma coluna “outros” para categorias que não se enquadram nas anteriores.
 
-Zoom image will be displayed
+```
 
-Imagem 15: Consulta SQL para a questão 3
+```
 
 A terceira CTE, chamada valor_total, calcula o valor total vendido por cada vendedor, somando todas as categorias. Essa etapa é importante para que, posteriormente, seja possível calcular o percentual de participação de cada categoria no total vendido por vendedor.
 
-Zoom image will be displayed
+```
 
-Imagem 16: Consulta SQL para a questão 3
+```
 
 Por fim, a quarta CTE, chamada percentual, calcula o percentual que cada categoria representa dentro do total vendido por cada vendedor. Para isso, realiza um join entre a tabela de valores por categoria e a tabela de valor total, dividindo o valor vendido em cada categoria pelo total do vendedor, multiplicando por 100 e arredondando o resultado para duas casas decimais. O resultado final apresenta, para cada vendedor, os percentuais de vendas distribuídos por categoria, permitindo identificar o foco comercial de cada um.
 
-Zoom image will be displayed
+```
 
-Imagem 17: Consulta SQL para a questão 3
+```
+
 
 #### Resposta 3
 
 A estrutura dos dados permite identificar claramente quais categorias predominam em cada vendedor, facilitando a segmentação e direcionamento de estratégias comerciais específicas.
 
-Zoom image will be displayed
+```
 
-Imagem 18: Resultado da consulta para a questão 3
+```
+
 
 ### Conclusão
 
@@ -380,25 +415,31 @@ Para responder à pergunta “Certos tipos de tratamento apresentam maior taxa d
 
 Dentro dessa mesma CTE, utilizei a função COUNT() para contabilizar o total de tratamentos por tipo (treatment_type). Em seguida, apliquei a função SUM() combinada com CASE WHEN para somar os tratamentos cujo status de pagamento fosse “pending” ou “failed”, considerados inadimplentes. A taxa de inadimplência foi então calculada com base na proporção desses casos em relação ao total de tratamentos, utilizando a fórmula (inadimplentes / total_tratamentos) * 100 e formatada com duas casas decimais por meio da função ROUND(). O uso do NULLIF() garante que divisões por zero sejam evitadas, retornando NULL nos casos em que o número de tratamentos é igual a zero.
 
-Zoom image will be displayed
+```
 
-Imagem 2: Consulta SQL para a Pergunta 1
+```
+
 A segunda parte da consulta, fora da CTE, classifica os valores da coluna amount em três faixas de preço: baixo (<1K), médio (1K–3K) e alto (>3K). Para isso, utilizei a função TRY_CAST() para tentar converter os valores de amount para o tipo numérico DECIMAL(18,2). Essa função é preferida em vez do CAST() tradicional porque, caso o valor de amount seja inválido (por exemplo, texto não numérico), o TRY_CAST() retorna NULL em vez de gerar erro. Isso torna a consulta mais robusta e tolerante a dados sujos ou inconsistentes. Em seguida, utilizei a estrutura CASE para classificar os valores convertidos em faixas, o que permite segmentar a inadimplência também com base no custo dos tratamentos.
 
-Zoom image will be displayed
+```
 
-Imagem 3: Consulta SQL para a Pergunta 1
+```
+
 Por fim, os resultados foram ordenados de forma decrescente pela taxa_inadimplencia_percentual, destacando os tipos de tratamento com maiores taxas de inadimplência e possibilitando à empresa revisar políticas de cobrança, avaliar a viabilidade de parcelamentos e buscar melhores condições com seguradoras. Essa abordagem torna a análise mais estratégica e orientada à tomada de decisão.
 
-Zoom image will be displayed
+```
 
-Imagem 4: Consulta SQL para a Pergunta 1
+```
+
 #### Resposta 1
 
 Os resultados indicam que a taxa de inadimplência é alta em praticamente todos os tipos de tratamento, variando conforme a faixa de valor dos procedimentos. No caso do ECG, os tratamentos com custo acima de 3 mil reais apresentam uma inadimplência extremamente elevada, com 93,33% dos casos em atraso ou não pagos. Já para a quimioterapia, mesmo os tratamentos mais baratos, com valor abaixo de 1 mil reais, apresentam uma inadimplência alta, de 87,5%, enquanto os tratamentos caros dessa modalidade têm uma taxa de 75%. Tratamentos de fisioterapia na faixa média, entre 1 e 3 mil reais, também mostram uma inadimplência significativa, de aproximadamente 73,7%. Em geral, mesmo os tratamentos com valores médios e baixos apresentam taxas altas, na faixa de 50% a 70%. Essa situação sugere que a inadimplência não está restrita apenas aos tratamentos mais caros, mas afeta de forma ampla diferentes tipos e faixas de valor. Esses dados indicam a necessidade de atenção especial para os processos de cobrança e acompanhamento financeiro, especialmente para os tratamentos de maior custo, que acumulam as maiores taxas de inadimplência. Essa análise pode servir para direcionar esforços e políticas que visem a redução da inadimplência, visando melhorar a sustentabilidade financeira do serviço.
 
 
-Imagem 5: Resultado da consulta para a questão 1
+```
+
+```
+
 ### Pergunta, Descrição e Resposta 2
 #### Questão 2
 
@@ -408,15 +449,19 @@ Existem médicos ou especialidades em que a maioria dos atendimentos agendados r
 
 Nesta questão, o objetivo foi analisar a taxa de cancelamento de atendimentos médicos por médico, especialidade e filial hospitalar. Para isso, utilizei as tabelas tb_act_appointments, que contém os agendamentos e seus status, e tb_act_doctors, que traz informações sobre os médicos, como a especialidade e a filial onde atendem. Como essas informações estão em tabelas diferentes, realizei uma junção do tipo LEFT JOIN, relacionando os registros pelo campo doctor_id. A consulta conta o total de atendimentos realizados e soma os atendimentos que foram cancelados, identificados pelo status ‘cancelled’. Para calcular a taxa de cancelamento percentual, dividi o número de cancelamentos pelo total de atendimentos, multiplicando o resultado por 100 e formatando para exibir duas casas decimais. Também usei a função NULLIF para evitar divisão por zero, caso não haja atendimentos registrados para algum médico. O agrupamento foi feito por médico, especialidade e filial, permitindo assim observar detalhadamente onde e por quem os cancelamentos ocorrem com maior frequência. Dessa forma, a view facilita o monitoramento e a análise dos padrões de cancelamento nas diferentes áreas e locais de atendimento.
 
-Zoom image will be displayed
+```
 
-Imagem 6: Consulta SQL para a questão 2
+```
+
 #### Resposta 2
 
 Os dados mostram a taxa de cancelamento de atendimentos para diferentes médicos, suas especialidades e as filiais onde atuam. O médico D007, da especialidade Oncologia na filial Westside Clinic, apresenta a maior taxa de cancelamento, com 38,46% dos seus 13 atendimentos cancelados. Em seguida, o médico D002, de Pediatria na Eastside Clinic, tem uma taxa semelhante, com 38,10% de cancelamentos em 21 atendimentos. Outros médicos da especialidade Dermatologia e Pediatria também apresentam taxas relevantes, variando entre cerca de 20% e 31%, indicando que uma parcela significativa dos atendimentos agendados por esses profissionais foi cancelada. Médicos como D010, da Oncologia na Eastside Clinic, apresentam uma taxa menor, com 15,79%.
 
 
-Imagem 7: Resultado da consulta para a questão 2
+```
+
+```
+
 Esses resultados podem sinalizar problemas específicos relacionados à agenda, comunicação ou confiança dos pacientes, especialmente para os médicos com taxas de cancelamento mais elevadas. Além disso, a variação das taxas entre filiais sugere que questões operacionais locais podem influenciar o volume de cancelamentos. Essa análise pode ajudar a identificar médicos e unidades que necessitam de atenção para reduzir cancelamentos e melhorar o atendimento.
 
 ### Pergunta, Descrição e Resposta 3
@@ -432,28 +477,39 @@ Primeiramente, utilizei duas CTEs (Common Table Expressions) para organizar os d
 
 A primeira CTE, chamada pacientes_sem_consulta, identifica os pacientes que ainda não realizaram nenhuma consulta, ou seja, cujos registros não aparecem na tabela de agendamentos. Para isso, fiz um LEFT JOIN entre a tabela de pacientes e a de agendamentos, filtrando os casos em que o paciente não possui correspondência na tabela de consultas (t2.patient_id IS NULL). Os dados foram agrupados por paciente, gênero e data de nascimento, permitindo calcular o total de pacientes sem consulta.
 
-Zoom image will be displayed
+```
 
-Imagem 8: Consulta SQL para a questão 3
+```
+
 A segunda CTE, pacientes_com_cancelamento_ou_noshow, analisa os pacientes que tiveram consultas com status “Cancelled” ou “No-show”, ou seja, não compareceram ou cancelaram. Também foi utilizada a junção entre as tabelas de pacientes e agendamentos, com um filtro específico para esses dois status. Em seguida, foi calculada a idade dos pacientes com base na data de nascimento, e os dados foram agrupados por gênero, status da consulta e idade.
 
-Zoom image will be displayed
+```
 
-Imagem 9: Consulta SQL para a questão 3
+```
+
 A terceira CTE, faixas_etarias, categoriza os pacientes da CTE anterior em faixas etárias pré-definidas (como “Menor de 18”, “18–29 anos”, etc.), permitindo visualizar a distribuição de cancelamentos e no-shows de forma segmentada por idade e gênero. O agrupamento por status, gender e faixa_etaria permite uma análise cruzada entre essas variáveis.
 
 
-Imagem 10: Consulta SQL para a questão 3
+```
+
+```
+
 Por fim, a consulta final seleciona todos os dados da CTE faixas_etarias, retornando uma tabela que mostra, para cada combinação de faixa etária, gênero e status da consulta, o total de ocorrências registradas. Essa estrutura facilita a identificação de padrões de comportamento entre grupos específicos de pacientes, como maior incidência de no-show entre jovens ou maior número de cancelamentos entre pacientes idosos, por exemplo.
 
 
-Imagem 11: Consulta SQL para a questão 3
+```
+
+```
+
 #### Resposta 3
 
 Os resultados revelam que pacientes do sexo masculino entre 18 e 29 anos concentram a maior quantidade de cancelamentos (7) e no-shows (5), quando comparados às mulheres da mesma faixa (2 cancelamentos e 1 no-show). Esse padrão de maior taxa de ausência masculina se mantém, embora com menor intensidade, nas faixas de 30 a 44 anos e de 45 a 59 anos. Já na faixa dos 60 anos ou mais, o comportamento é mais equilibrado entre homens e mulheres, tanto em cancelamentos quanto em faltas, ambos com 3 ocorrências cada.
 
 
-Imagem 12: Resultado da consulta para a questão 3
+```
+
+```
+
 Esses dados sugerem que jovens adultos do sexo masculino apresentam maior propensão a não comparecer às consultas agendadas, o que pode impactar a eficiência do serviço e a gestão da agenda médica.
 
 ### Conclusão
