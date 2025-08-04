@@ -24,8 +24,7 @@ Neste projeto, utilizo o banco de dados Delivery Center: Food & Goods orders in 
   
 Aqui está a figura disponibilizada pelo autor do diagrama de modelo de dados.
 
-Zoom image will be displayed
-
+<img width="2486" height="1496" alt="Image" src="https://github.com/user-attachments/assets/341040f0-dbc3-4566-8689-cbd4ce79d770" />
 Imagem 1: Explicação da tabela. Fonte: https://www.linkedin.com/in/cleibsonalmeida/
 
 #### As perguntas e as respostas
