@@ -69,9 +69,10 @@ Agrupei os resultados pelas variáveis driver_type e driver_modal, o que permite
 
 A análise dos dados revelou que tanto os entregadores freelancers quanto os operadores logísticos apresentam taxas de sucesso nas entregas extremamente altas, todas superiores a 99,8%, o que indica um desempenho operacional bastante consistente.
 
-```
+<div align="center">
+<img width="703" height="127" alt="Image" src="https://github.com/user-attachments/assets/214c61b0-c973-4abe-aa85-0284b025c956" />
+</div>
 
-```
 
 Ao segmentar os resultados por tipo de modal, observamos que os freelancers bikers alcançaram uma taxa de sucesso de 99,94%, com um total de 97.500 entregas realizadas. Já os freelancers motoboys, embora com uma taxa ligeiramente inferior (99,81%), concentraram o maior volume de entregas entre todos os perfis analisados, somando mais de 161 mil.
 
@@ -170,6 +171,7 @@ LEFT JOIN analise_faixa_distancia
 ```
 
 
+
 Já a segunda CTE, analise_faixa_distancia, segmenta as entregas em faixas de distância pré-definidas (de 0–1 km até mais de 10 km), permitindo analisar como o valor médio dos pedidos varia conforme o modal e a distância percorrida.
 
 Essa estrutura modular com CTEs torna a análise mais clara, possibilitando uma melhor organização lógica dos passos do processamento dos dados.
@@ -181,9 +183,10 @@ Por fim, selecionei as variáveis relevantes da CTE analise_faixa_distancia e or
 
 A análise dos dados revelou padrões interessantes sobre a relação entre o modal logístico, a distância percorrida e o valor médio dos pedidos entregues. Observamos que, para ambos os modais analisados (bikers e motoboys), o valor médio dos pedidos tende a aumentar conforme a distância da entrega se eleva.
 
-```
+<div align="center">
+<img width="427" height="235" alt="Image" src="https://github.com/user-attachments/assets/ebdfe01d-d6b1-4679-b9af-33cd80a14561" />
+</div>
 
-```
 
 No caso dos bikers, o maior volume de entregas concentra-se nas faixas de distância até 3 km, com valores médios de pedido entre R$85,15 e R$90,14. Entretanto, em distâncias maiores, embora o número de entregas diminua consideravelmente, o valor médio dos pedidos cresce de forma significativa, chegando a R$194,54 para entregas acima de 10 km. Isso indica que, mesmo com menos frequência, pedidos mais caros são realizados em rotas mais longas por bikers.
 
@@ -246,10 +249,10 @@ O agrupamento foi feito pelo estado do hub, permitindo identificar quais regiõe
 
 A análise do desempenho dos hubs em diferentes estados revela informações estratégicas valiosas para o negócio.
 
+<div align="center">
+<img width="441" height="121" alt="Image" src="https://github.com/user-attachments/assets/14d89f6d-daef-4656-a032-84986d7bbf15" />
+</div>
 
-```
-
-```
 
 Observamos que o estado de São Paulo (SP) lidera em volume de pedidos, com 179.174 pedidos finalizados, gerando uma receita bruta de aproximadamente R$ 19,89 milhões e receita líquida próxima a R$ 19,67 milhões. O desconto médio aplicado nas vendas em SP é de 24%.
 
@@ -380,10 +383,11 @@ Resposta 1
 
 A análise teve como objetivo identificar a quantidade de compras realizadas por cada cliente, por meio da contagem do número de pedidos registrados na tabela Orders. Além disso, buscou-se calcular o valor total gasto por cada um desses clientes, somando os preços dos produtos presentes em cada pedido, com base nos dados da tabela Order Items. Dessa forma, foi possível mapear o comportamento de compra individual, considerando tanto a frequência quanto o volume financeiro das transações.
 
+<div align="center">
+<img width="545" height="776" alt="Image" src="https://github.com/user-attachments/assets/4736b697-4e63-4f57-8add-c76d318e1d87" />
+</div>
 
-```
 
-```
 
 ### Pergunta, Descrição e Resposta 2
 #### Questão 2
@@ -512,10 +516,10 @@ Resposta 2
 
 Nesta questão, o objetivo foi analisar o desempenho de vendas dos vendedores considerando os diferentes tipos de pagamento utilizados pelos clientes. Para isso, foram consolidadas informações de todos os vendedores (identificados por seller_id), detalhando o valor total de vendas de cada um, calculado como a soma do preço dos produtos com o valor do frete.
 
+<div align="center">
+<img width="590" height="795" alt="Image" src="https://github.com/user-attachments/assets/cbf6448b-b8ff-4650-9f97-9075ace5a3db" />
+</div>
 
-```
-
-```
 
 Além disso, as vendas foram segmentadas de acordo com o tipo de pagamento utilizado, como cartão de crédito, boleto, voucher e cartão de débito. Essa estrutura permite compreender não apenas quanto cada vendedor faturou, mas também qual foi a distribuição percentual de seus recebimentos por tipo de pagamento, oferecendo uma visão mais completa sobre o comportamento de consumo e a dependência de cada vendedor em relação aos meios de pagamento.
 
@@ -653,10 +657,9 @@ Por fim, a quarta CTE, chamada percentual, calcula o percentual que cada categor
 
 A estrutura dos dados permite identificar claramente quais categorias predominam em cada vendedor, facilitando a segmentação e direcionamento de estratégias comerciais específicas.
 
-```
-
-```
-
+<div align="center">
+<img width="729" height="783" alt="Image" src="https://github.com/user-attachments/assets/4140146a-1e3a-416a-9c29-2b421527a54b" />
+</div>
 
 ### Conclusão
 
@@ -815,10 +818,10 @@ Por fim, os resultados foram ordenados de forma decrescente pela taxa_inadimplen
 
 Os resultados indicam que a taxa de inadimplência é alta em praticamente todos os tipos de tratamento, variando conforme a faixa de valor dos procedimentos. No caso do ECG, os tratamentos com custo acima de 3 mil reais apresentam uma inadimplência extremamente elevada, com 93,33% dos casos em atraso ou não pagos. Já para a quimioterapia, mesmo os tratamentos mais baratos, com valor abaixo de 1 mil reais, apresentam uma inadimplência alta, de 87,5%, enquanto os tratamentos caros dessa modalidade têm uma taxa de 75%. Tratamentos de fisioterapia na faixa média, entre 1 e 3 mil reais, também mostram uma inadimplência significativa, de aproximadamente 73,7%. Em geral, mesmo os tratamentos com valores médios e baixos apresentam taxas altas, na faixa de 50% a 70%. Essa situação sugere que a inadimplência não está restrita apenas aos tratamentos mais caros, mas afeta de forma ampla diferentes tipos e faixas de valor. Esses dados indicam a necessidade de atenção especial para os processos de cobrança e acompanhamento financeiro, especialmente para os tratamentos de maior custo, que acumulam as maiores taxas de inadimplência. Essa análise pode servir para direcionar esforços e políticas que visem a redução da inadimplência, visando melhorar a sustentabilidade financeira do serviço.
 
+<div align="center">
+<img width="549" height="334" alt="Image" src="https://github.com/user-attachments/assets/61839800-4862-4bbf-ae5b-47fe359e1952" />
+</div>
 
-```
-
-```
 
 ### Pergunta, Descrição e Resposta 2
 #### Questão 2
@@ -867,10 +870,10 @@ order by taxa_cancelamento_percentual desc
 
 Os dados mostram a taxa de cancelamento de atendimentos para diferentes médicos, suas especialidades e as filiais onde atuam. O médico D007, da especialidade Oncologia na filial Westside Clinic, apresenta a maior taxa de cancelamento, com 38,46% dos seus 13 atendimentos cancelados. Em seguida, o médico D002, de Pediatria na Eastside Clinic, tem uma taxa semelhante, com 38,10% de cancelamentos em 21 atendimentos. Outros médicos da especialidade Dermatologia e Pediatria também apresentam taxas relevantes, variando entre cerca de 20% e 31%, indicando que uma parcela significativa dos atendimentos agendados por esses profissionais foi cancelada. Médicos como D010, da Oncologia na Eastside Clinic, apresentam uma taxa menor, com 15,79%.
 
+<div align="center">
+<img width="632" height="236" alt="Image" src="https://github.com/user-attachments/assets/15fbe945-3bdc-4a3b-9606-7f74aec729a4" />
+</div>
 
-```
-
-```
 
 Esses resultados podem sinalizar problemas específicos relacionados à agenda, comunicação ou confiança dos pacientes, especialmente para os médicos com taxas de cancelamento mais elevadas. Além disso, a variação das taxas entre filiais sugere que questões operacionais locais podem influenciar o volume de cancelamentos. Essa análise pode ajudar a identificar médicos e unidades que necessitam de atenção para reduzir cancelamentos e melhorar o atendimento.
 
@@ -994,10 +997,9 @@ Por fim, a consulta final seleciona todos os dados da CTE faixas_etarias, retorn
 
 Os resultados revelam que pacientes do sexo masculino entre 18 e 29 anos concentram a maior quantidade de cancelamentos (7) e no-shows (5), quando comparados às mulheres da mesma faixa (2 cancelamentos e 1 no-show). Esse padrão de maior taxa de ausência masculina se mantém, embora com menor intensidade, nas faixas de 30 a 44 anos e de 45 a 59 anos. Já na faixa dos 60 anos ou mais, o comportamento é mais equilibrado entre homens e mulheres, tanto em cancelamentos quanto em faltas, ambos com 3 ocorrências cada.
 
-
-```
-
-```
+<div align="center">
+<img width="264" height="350" alt="Image" src="https://github.com/user-attachments/assets/0646d08e-eb82-4cc5-987b-443bb5cfcb54" />
+</div>
 
 Esses dados sugerem que jovens adultos do sexo masculino apresentam maior propensão a não comparecer às consultas agendadas, o que pode impactar a eficiência do serviço e a gestão da agenda médica.
 
