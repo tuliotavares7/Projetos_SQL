@@ -1,4 +1,4 @@
-# Portfolio R 📊
+# Portfolio SQL 📊
 
 ## Brazil Delivery Center 
 
@@ -41,7 +41,20 @@ Qual a taxa de sucesso de entregas (status = “Entregue”) entre freelancers e
 A partir da pergunta acima, defini quais colunas precisavam estar presentes no resultado da consulta, e são elas: driver_type, driver_modal, total_entregas, entregas_sucesso, taxa_sucesso_percentual e distancia_media_metros. Para isso, utilizei um LEFT JOIN entre as tabelas tb_act_drivers e tb_act_deliveries, unindo ambas pela chave primária driver_id. A opção pelo LEFT JOIN foi intencional, pois garante que todos os entregadores sejam incluídos no resultado, mesmo aqueles que não realizaram entregas, o que pode indicar inatividade ou baixa demanda.
 
 ```
-
+create view vw_freelance_analise as
+        select 
+        	t1.driver_type,
+        	t1.driver_modal,
+        	count(t2.delivery_id) as total_entregas,
+        	sum(case when t2.delivery_status = 'DELIVERED' then 1 else 0 end) as entregas_sucesso,
+        	format(cast(sum(case when t2.delivery_status = 'DELIVERED' then 1 else 0 end) as float) / count(*) * 100, 'N2', 'PT-BR') as taxa_sucesso_percentual,
+        	AVG(t2.delivery_distance_meters) as distancia_media_metros -- distancia media por tipo de modal 
+        from [dbo].[tb_act_drivers] as t1
+        
+        left join [dbo].[tb_act_deliveries] as t2
+        on t1.driver_id = t2.driver_id
+        
+        group by t1.driver_type, t1.driver_modal 
 ```
 
 Em seguida, utilizei a função COUNT() para contabilizar o total de entregas por tipo e modal de entregador. Para somar apenas as entregas com status “DELIVERED”, utilizei a função SUM() combinada com a cláusula CASE WHEN. Isso permitiu filtrar apenas os registros bem-sucedidos e calcular, posteriormente, a taxa de sucesso percentual. Para formatar esse percentual com duas casas decimais e notação brasileira, apliquei a função FORMAT() com os parâmetros ‘N2’ e ‘PT-BR’.
@@ -82,24 +95,87 @@ Para organizar a consulta e facilitar a compreensão, utilizei CTEs (Common Tabl
 A primeira CTE, chamada modal, calcula o total de entregas, o valor médio dos pedidos e a distância média percorrida, agrupando os dados por tipo de entregador e modal logístico.
 
 ```
+  create view vw_modal as 
+             with modal as (
+             
+             select
+             	t1.driver_type,
+             	t1.driver_modal,
+             	count(t2.delivery_id) as total_entregas,
+             	avg(t3.order_amount) as valor_medio_pedidos,
+             	avg(t2.delivery_distance_meters) AS distancia_media_metros
+             from [dbo].[tb_act_drivers] as t1
+             
+             left join [dbo].[tb_act_deliveries] as t2
+             on t1.driver_id = t2.driver_id
+             
+             left join [dbo].[tb_act_orders] as t3
+             on t2.delivery_order_id = t3.delivery_order_id
+             
+             group by t1.driver_type, t1.driver_modal
+             ), 
+
+             analise_faixa_distancia as (
+             
+             select
+             	t1.driver_modal,
+             case
+             	when t2.delivery_distance_meters <= 1000 then '0-1 km'
+             	when t2.delivery_distance_meters > 1000 and t2.delivery_distance_meters <= 3000 then '1-3 km'
+             	when t2.delivery_distance_meters > 3000 and t2.delivery_distance_meters <= 5000 then '3-5 km'
+             	when t2.delivery_distance_meters > 5000 and t2.delivery_distance_meters <= 10000 then '5-10 km'
+             	else '10 km+'
+             	end as faixa_distancia,
+             	count(delivery_id) as total_entregas,
+             	AVG(t3.order_amount) as valor_medio_pedidos_faixa
+             from [dbo].[tb_act_drivers] as t1
+             
+               left join [dbo].[tb_act_deliveries] as t2
+                 on t1.driver_id = t2.driver_id
+             
+             
+             	left join [dbo].[tb_act_orders] as t3
+             		on t2.delivery_order_id = t3.delivery_order_id
+             
+             group by t1.driver_modal,
+             
+             case
+             	when t2.delivery_distance_meters <= 1000 then '0-1 km'
+             	when t2.delivery_distance_meters > 1000 and t2.delivery_distance_meters <= 3000 then '1-3 km'
+             	when t2.delivery_distance_meters > 3000 and t2.delivery_distance_meters <= 5000 then '3-5 km'
+             	when t2.delivery_distance_meters > 5000 and t2.delivery_distance_meters <= 10000 then '5-10 km'
+             	else '10 km+'
+             	end
+             )
+             
+             SELECT 
+    modal.driver_type,
+    modal.driver_modal,
+    modal.total_entregas AS total_entregas_modal,
+    modal.valor_medio_pedidos,
+    modal.distancia_media_metros,
+    analise_faixa_distancia.faixa_distancia,
+    analise_faixa_distancia.total_entregas AS total_entregas_faixa,
+    ROUND(analise_faixa_distancia.valor_medio_pedidos_faixa, 2) AS valor_medio_pedidos_faixa
+FROM modal
+LEFT JOIN analise_faixa_distancia
+    ON modal.driver_modal = analise_faixa_distancia.driver_modal
+
+
+
+	select
+		*
+	from vw_modal
 
 ```
 
 
 Já a segunda CTE, analise_faixa_distancia, segmenta as entregas em faixas de distância pré-definidas (de 0–1 km até mais de 10 km), permitindo analisar como o valor médio dos pedidos varia conforme o modal e a distância percorrida.
 
-
-```
-
-```
-
 Essa estrutura modular com CTEs torna a análise mais clara, possibilitando uma melhor organização lógica dos passos do processamento dos dados.
 
 Por fim, selecionei as variáveis relevantes da CTE analise_faixa_distancia e ordenei os resultados por modal e faixa de distância, facilitando a interpretação dos dados.
 
-```
-
-```
 
 #### Resposta 2
 
@@ -131,6 +207,32 @@ O foco da análise é relacionar o desempenho de vendas com a localização do h
 Primeiro, selecionei as colunas cruciais para o resultado final: o estado do hub, o total de pedidos finalizados, a receita bruta (soma do valor dos pedidos), a receita líquida (soma dos pagamentos efetivamente realizados) e o desconto médio aplicado. Para isso, realizei joins entre as tabelas de hubs, lojas, pedidos e pagamentos, utilizando as chaves primárias e estrangeiras correspondentes para garantir a integridade dos dados.
 
 ```
+create view vw_uf_pedidos as
+        select
+        	t1.hub_state,
+        	count(t3.order_id) as 'total pedidos',
+        	format(round(sum(cast(t3.order_amount as float)), 2), 'N2', 'pt-BR') as 'receita bruta', 
+        	format(round(sum(t4.payment_amount), 2), 'N2', 'pt-BR') as 'receita liquida',  
+        	format(round(avg(
+        		case
+        			when t4.payment_amount <= try_cast(t3.order_amount as float) and try_cast(t3.order_amount as float) > 0 -- try_cast as float para converter um 
+        			-- tipo especifico retornando null se a conversao falhar 
+        				then 1.0 - (t4.payment_amount /  try_cast(t3.order_amount as float)) 
+        				end ), 2) * 100, 'N2', 'pt-BR') as 'desconto medio'
+        from [dbo].[tb_act_hubs] as t1
+        
+        left join [dbo].[tb_act_stores] as t2
+        on t1.hub_id = t2.hub_id
+        
+        left join [dbo].[orders] as t3
+        on t2.store_id = t3.store_id
+        
+        left join [dbo].[tb_act_payments] as t4
+        on t3.payment_order_id = t4.payment_order_id
+        
+        where t3.order_status = 'FINISHED' and t4.payment_status = 'paid' -- pedidos e pagamentos finalizados 
+        
+        group by t1.hub_state
 
 ```
 
@@ -223,26 +325,56 @@ Nessa etapa, apliquei a função COUNT() para contar quantas vezes o cliente com
 
 
 ```
+create view vw_produto_mais_comprado_por_cliente
+as
+
+
+with customers as (
+   select
+   		t1.customer_unique_id,
+		t4.product_category_name,
+   		count(t2.order_id) as qntd,
+		sum(t3.price) as valor_total
+   from [dbo].[tb_act_olist_customers_dataset] as t1
+   
+   left join [dbo].[tb_act_olist_orders] as t2
+on t1.customer_id = t2. customer_id
+
+	left join [dbo].[tb_act_olist_order_items] as t3
+	on t2.order_id = t3.order_id
+
+	left join [dbo].[tb_act_olist_products] as t4
+	on t3.product_id = t4.product_id
+
+group by t1.customer_unique_id, t4.product_category_name
+
+
+),
+
+rankeamento as (
+-- rankear pra saber quais dos produtos ele comprou mais vezes: quais produtos foram mais vendidos
+
+select
+	*,
+	row_number() over(partition by customer_unique_id order by qntd desc, valor_total desc) as rank
+from customers 
+
+)
+-- filtrar so quem tem ranking = 1
+select
+	*
+from rankeamento 
+
+where rank = 1
 
 ```
 
 Em seguida, criei uma segunda CTE chamada rankeamento, onde utilizei a função ROW_NUMBER() com PARTITION BY por customer unique ID e ordenação por quantidade em ordem decrescente e valor total em ordem decrescente. Isso permite identificar, para cada cliente, qual foi a categoria de produto mais comprada, priorizando a quantidade e, em caso de empate, o valor total gasto.
 
-```
-
-```
-
 Por fim, selecionei apenas os registros com rank igual a 1, ou seja, a categoria mais comprada por cada cliente, tanto em volume quanto em valor. Isso permite obter insights sobre os hábitos de consumo dos clientes e pode ser utilizado para estratégias de personalização, recomendação de produtos ou campanhas de fidelização.
-
-```
-
-```
 
 A consulta foi salva como uma view chamada vw_produto_mais_comprado_por_cliente, facilitando o reuso em análises futuras.
 
-```
-
-```
 
 Resposta 1
 
@@ -267,38 +399,114 @@ Como os dados de vendas e pagamentos estão distribuídos entre diferentes tabel
 A primeira CTE, chamada Sellers, agrega o valor total de vendas de cada pedido por vendedor, somando os campos price e freight_value (preço do item e valor do frete).
 
 ```
+create view vw_tipo_pagamento_por_vendedor
+as 
+
+-- 3) vendas por tipo de cada vendedor - cartao, boleto ou voucher 
+
+
+-- informação de todos os vendedores (seller_id), o valor total d evendas de cada um desses vendedores, percentual de acordo com o tipo de pagamento 
+
+
+-- informacao dos vendedores e do tipo de pagamento 
+
+-- valor total: preço + frete
+
+
+with sellers as (
+
+select
+	seller_id,
+	order_id,
+	sum(price + freight_value) as valor_total
+from [dbo].[tb_act_olist_order_items] as t1
+
+group by seller_id, order_id
+
+),
+
+tipo_pagamento as (
+
+select
+	order_id,
+	payment_type,
+	sum(payment_value) as valor_pago
+from [dbo].[tb_act_olist_order_payments] 
+
+group by order_id, payment_type 
+
+
+),
+
+cruzamento as (
+
+select
+	t1.seller_id,
+	t1.valor_total,
+	t2.payment_type
+from sellers as t1
+
+left join tipo_pagamento as t2
+on t1.order_id = t2.order_id
+
+),
+
+tratamento as (
+
+-- eu quero uma so linha pra cada vendedor 
+select
+	seller_id,
+	sum(valor_total) as valor_total,
+	sum(case when payment_type = 'credit_card' then valor_total else 0 end) as cartao_credito,
+	sum(case when payment_type = 'boleto' then valor_total else 0 end) as boleto,
+	sum(case when payment_type = 'voucher' then valor_total else 0 end) as voucher,
+	sum(case when payment_type = 'debit_card' then valor_total else 0 end) as cartao_debito
+from cruzamento 
+
+group by seller_id
+
+
+-- ainda nao ta agrupando por vendedor 
+
+)
+
+select 
+	seller_id,
+	sum(valor_total) as valor_total,
+	sum(cartao_credito) as cartao_credito,
+	sum(boleto) as boleto,
+	sum(voucher) as voucher,
+	sum(cartao_debito) as cartao_debito
+from tratamento 
+
+group by seller_id
+-- qual foi o tipo de pagamento por seller_id
+
+
+-- ########################################################33
+
+
+select 
+	*
+from vw_tipo_pagamento_por_vendedor
+
 
 ```
 
 Em seguida, a CTE Tipo Pagamento calcula o valor total pago por pedido e por tipo de pagamento (como crédito, boleto ou voucher), agrupando os dados com base no order_id.
 
-```
-
-```
 
 Na CTE Cruzamento, foi realizada uma junção entre essas duas fontes de informação (vendedores e pagamentos), conectando as CTEs anteriores por order_id e associando cada venda ao tipo de pagamento utilizado.
 
-```
-
-```
 
 A CTE Tratamento consolida os dados por vendedor, somando os valores totais e discriminando quanto foi pago com cada forma de pagamento, por meio da função CASE WHEN.
 
-```
-
-```
 
 Por fim, a query final seleciona os dados de cada vendedor, exibindo o valor total vendido e os valores separados por tipo de pagamento, permitindo observar com clareza o perfil de pagamento dos clientes de cada vendedor.
 
-```
-
-```
 
 Essa estrutura com CTEs facilita a leitura da consulta, além de permitir a reutilização dos dados intermediários para novas análises. O resultado pode ser usado para entender preferências de pagamento por vendedor e apoiar estratégias comerciais ou financeiras.
 
-```
-
-```
 
 Resposta 2
 
@@ -327,26 +535,118 @@ Para organizar a análise, utilizei Common Table Expressions (CTEs) que facilita
 A primeira CTE, chamada sellers, calcula o valor total vendido por cada vendedor em cada categoria de produto. Para isso, ela faz um join entre a tabela de itens vendidos e a tabela de produtos para associar o produto à sua categoria, removendo espaços extras nos IDs para garantir a correspondência correta. Em seguida, agrupa os dados por vendedor e categoria, somando o valor total das vendas (preço mais valor do frete) para cada combinação.
 
 ```
+create view vw_percentual_categorias_por_vendedor
+as 
 
+-- 1) percentual de categorias mais vendidas por vendedor 
+
+
+-- 1. CTE 'sellers': calcula o valor total vendido por vendedor e categoria
+
+
+with sellers as (
+
+	SELECT
+    t1.seller_id,
+    t2.product_category_name,
+    SUM(t1.price + t1.freight_value) AS valor_total
+FROM tb_act_olist_order_items t1
+LEFT JOIN tb_act_olist_products t2
+    ON LTRIM(RTRIM(t1.product_id)) = LTRIM(RTRIM(t2.product_id)) -- remove espaços a direita e a esquerda 
+GROUP BY t1.seller_id, t2.product_category_name
+
+
+
+-- tb_act_olist_order_items - informacao dos vendedores 
+-- tenho o seller_id e o valor total. Pq o valor total? 
+-- percentual: o valor vendido em construcao dividido pelo valor total, por ex 
+
+-- tabela que tem as categorias: [dbo].[tb_act_olist_products]
+
+-- uma linha para o vendedor de venda em cada categoria - granuralidade diferentes 
+
+),
+
+-- 2. CTE 'tratamento': transforma as categorias em colunas específicas
+
+tratamento as (
+
+-- categorizar as categorias que precisam e o valor de venda d ecada uma dessas categorias por vendedor 
+
+select
+	seller_id,
+	sum(case when product_category_name like '%alimentos%' then valor_total else 0 end) as alimentos, 
+	sum(case when product_category_name like '%construcao%' then valor_total else 0 end) as construcao, 
+	sum(case when product_category_name like '%eletrodomesticos%' then valor_total else 0 end) as eletrodomesticos, 
+	sum(case when product_category_name like '%fashion%' then valor_total else 0 end) as fashion, 
+	sum(case when product_category_name like '%livros%' then valor_total else 0 end) as livros, 
+	sum(case when product_category_name like '%moveis%' then valor_total else 0 end) as moveis, 
+	sum(case when product_category_name like '%telefonia%' then valor_total else 0 end) as telefonia,
+	sum(case when product_category_name not like '%alimentos%'
+		and product_category_name not like '%construcao%'
+		and product_category_name not like '%eletrodomesticos%'
+		and product_category_name not like '%fashion%'
+		and product_category_name not like '%livros%'
+		and product_category_name not like '%moveis%'
+		and product_category_name not like '%telefonia%'
+then valor_total
+else 0
+end) as outros 
+from sellers 
+
+group by seller_id
+
+),
+
+-- 3. CTE 'valor_total': valor total vendido por vendedor
+
+
+-- aqui eu tinha varias linhas para um unico vendedor 
+
+valor_total as (
+
+select 
+	seller_id,
+	sum(valor_total) as valor_total
+from sellers
+
+group by seller_id
+
+),
+
+-- 4. CTE 'percentual': calcula o percentual de vendas por categoria
+
+percentual as (
+
+-- quero uma linha pra cada vendedor 
+-- preciso do percentual
+-- independnete do produto, que conste em uma linha apenas 
+
+
+select
+	t1.seller_id,
+	round((t1.alimentos / t2.valor_total) * 100, 2) as alimentos,
+	round((t1.construcao / t2.valor_total) * 100 ,2) as construcao,
+	round((t1.eletrodomesticos / t2.valor_total) * 100 ,2) as eletrodomesticos,
+	round((t1.fashion / t2.valor_total) * 100 ,2) as fashion, 
+	round((t1.livros / t2.valor_total) * 100 ,2) as livros, 
+	round((t1.moveis / t2.valor_total) * 100 ,2) as moveis,
+	round((t1.telefonia / t2.valor_total) * 100 ,2) as telefonia,
+	round((t1.outros / t2.valor_total) * 100 ,2) as outros
+from tratamento as t1
+
+left join valor_total as t2
+on t1.seller_id = t2.seller_id
 ```
 
 A segunda CTE, denominada tratamento, transforma as categorias de produtos em colunas específicas, criando uma visão mais estruturada dos dados. Ela agrupa os valores totais vendidos por categoria para cada vendedor, utilizando expressões condicionais (CASE WHEN) para alocar os valores em colunas como alimentos, construção, eletrodomésticos, fashion, livros, móveis, telefonia, e uma coluna “outros” para categorias que não se enquadram nas anteriores.
 
-```
-
-```
 
 A terceira CTE, chamada valor_total, calcula o valor total vendido por cada vendedor, somando todas as categorias. Essa etapa é importante para que, posteriormente, seja possível calcular o percentual de participação de cada categoria no total vendido por vendedor.
 
-```
-
-```
 
 Por fim, a quarta CTE, chamada percentual, calcula o percentual que cada categoria representa dentro do total vendido por cada vendedor. Para isso, realiza um join entre a tabela de valores por categoria e a tabela de valor total, dividindo o valor vendido em cada categoria pelo total do vendedor, multiplicando por 100 e arredondando o resultado para duas casas decimais. O resultado final apresenta, para cada vendedor, os percentuais de vendas distribuídos por categoria, permitindo identificar o foco comercial de cada um.
 
-```
-
-```
 
 
 #### Resposta 3
@@ -416,20 +716,100 @@ Para responder à pergunta “Certos tipos de tratamento apresentam maior taxa d
 Dentro dessa mesma CTE, utilizei a função COUNT() para contabilizar o total de tratamentos por tipo (treatment_type). Em seguida, apliquei a função SUM() combinada com CASE WHEN para somar os tratamentos cujo status de pagamento fosse “pending” ou “failed”, considerados inadimplentes. A taxa de inadimplência foi então calculada com base na proporção desses casos em relação ao total de tratamentos, utilizando a fórmula (inadimplentes / total_tratamentos) * 100 e formatada com duas casas decimais por meio da função ROUND(). O uso do NULLIF() garante que divisões por zero sejam evitadas, retornando NULL nos casos em que o número de tratamentos é igual a zero.
 
 ```
+CREATE VIEW vw_inadimplencia AS
 
+WITH inadimplencia_por_tratamento AS (
+    SELECT
+        t1.treatment_type,
+        t2.amount,
+        COUNT(t1.treatment_id) AS total_tratamentos,
+        SUM(CASE WHEN t2.payment_status IN ('pending', 'failed') THEN 1 ELSE 0 END) AS inadimplentes,
+        CAST(ROUND(
+            100.0 * SUM(CASE WHEN t2.payment_status IN ('pending', 'failed') THEN 1 ELSE 0 END) /
+            NULLIF(COUNT(t1.treatment_id), 0), 2
+        ) AS decimal(5,2)) as taxa_inadimplencia_percentual
+    FROM [dbo].[treatments] t1
+    LEFT JOIN [dbo].[billing] t2 ON t1.treatment_id = t2.treatment_id
+    GROUP BY t1.treatment_type, t2.amount
+)
+
+SELECT
+    treatment_type,
+    CASE    
+        WHEN TRY_CAST(amount AS decimal(18,2)) < 1000 THEN 'baixo (<1K)'
+        WHEN TRY_CAST(amount AS decimal(18,2)) BETWEEN 1000 AND 3000 THEN 'medio (1K-3K)'
+        ELSE 'alto (>3k)'
+    END AS faixa_valor,
+    SUM(total_tratamentos) AS total_tratamentos,
+    SUM(inadimplentes) AS inadimplentes,
+    ROUND(
+        100.0 * SUM(inadimplentes) / NULLIF(SUM(total_tratamentos), 0), 2
+    ) AS taxa_inadimplencia_percentual
+FROM inadimplencia_por_tratamento
+GROUP BY
+    treatment_type,
+    CASE    
+        WHEN TRY_CAST(amount AS decimal(18,2)) < 1000 THEN 'baixo (<1K)'
+        WHEN TRY_CAST(amount AS decimal(18,2)) BETWEEN 1000 AND 3000 THEN 'medio (1K-3K)'
+        ELSE 'alto (>3k)'
+    END
+
+----------------------------------
+
+ALTER VIEW vw_inadimplencia AS
+
+WITH inadimplencia_por_tratamento AS (
+    select
+        t1.treatment_type,
+        t2.amount,
+        count(t1.treatment_id) as total_tratamentos,
+        sum(case when t2.payment_status in ('pending', 'failed') then 1 else 0 end) as inadimplentes,
+        cast(round(
+            100.0 * sum(case when t2.payment_status in ('pending', 'failed') then 1 else 0 end) /
+            nullif(count(t1.treatment_id), 0), 2
+        ) as decimal(5,2)) as taxa_inadimplencia_percentual
+    from [dbo].[treatments] t1
+    left join [dbo].[billing] t2 on t1.treatment_id = t2.treatment_id
+    group by t1.treatment_type, t2.amount
+)
+
+select
+    treatment_type,
+    case    
+        when try_cast(amount as decimal(18,2)) < 1000 then 'baixo (<1K)'
+        when try_cast(amount as decimal(18,2)) between 1000 and 3000 then 'medio (1K-3K)'
+        else 'alto (>3k)'
+    end as faixa_valor,
+    sum(total_tratamentos) as total_tratamentos,
+    sum(inadimplentes) as inadimplentes,
+    cast(round(
+        100.0 * sum(inadimplentes) / nullif(sum(total_tratamentos), 0), 2
+    ) as decimal(5,2)) as taxa_inadimplencia_percentual
+from inadimplencia_por_tratamento
+group by
+    treatment_type,
+    case    
+        when try_cast(amount as decimal(18,2)) < 1000 then 'baixo (<1K)'
+        when try_cast(amount as decimal(18,2)) between 1000 and 3000 then 'medio (1K-3K)'
+        else 'alto (>3k)'
+    end
+
+
+
+----------------------------------
+
+
+
+	SELECT *
+FROM vw_inadimplencia
+ORDER BY taxa_inadimplencia_percentual DESC;
 ```
 
 A segunda parte da consulta, fora da CTE, classifica os valores da coluna amount em três faixas de preço: baixo (<1K), médio (1K–3K) e alto (>3K). Para isso, utilizei a função TRY_CAST() para tentar converter os valores de amount para o tipo numérico DECIMAL(18,2). Essa função é preferida em vez do CAST() tradicional porque, caso o valor de amount seja inválido (por exemplo, texto não numérico), o TRY_CAST() retorna NULL em vez de gerar erro. Isso torna a consulta mais robusta e tolerante a dados sujos ou inconsistentes. Em seguida, utilizei a estrutura CASE para classificar os valores convertidos em faixas, o que permite segmentar a inadimplência também com base no custo dos tratamentos.
 
-```
-
-```
 
 Por fim, os resultados foram ordenados de forma decrescente pela taxa_inadimplencia_percentual, destacando os tipos de tratamento com maiores taxas de inadimplência e possibilitando à empresa revisar políticas de cobrança, avaliar a viabilidade de parcelamentos e buscar melhores condições com seguradoras. Essa abordagem torna a análise mais estratégica e orientada à tomada de decisão.
 
-```
-
-```
 
 #### Resposta 1
 
@@ -450,7 +830,37 @@ Existem médicos ou especialidades em que a maioria dos atendimentos agendados r
 Nesta questão, o objetivo foi analisar a taxa de cancelamento de atendimentos médicos por médico, especialidade e filial hospitalar. Para isso, utilizei as tabelas tb_act_appointments, que contém os agendamentos e seus status, e tb_act_doctors, que traz informações sobre os médicos, como a especialidade e a filial onde atendem. Como essas informações estão em tabelas diferentes, realizei uma junção do tipo LEFT JOIN, relacionando os registros pelo campo doctor_id. A consulta conta o total de atendimentos realizados e soma os atendimentos que foram cancelados, identificados pelo status ‘cancelled’. Para calcular a taxa de cancelamento percentual, dividi o número de cancelamentos pelo total de atendimentos, multiplicando o resultado por 100 e formatando para exibir duas casas decimais. Também usei a função NULLIF para evitar divisão por zero, caso não haja atendimentos registrados para algum médico. O agrupamento foi feito por médico, especialidade e filial, permitindo assim observar detalhadamente onde e por quem os cancelamentos ocorrem com maior frequência. Dessa forma, a view facilita o monitoramento e a análise dos padrões de cancelamento nas diferentes áreas e locais de atendimento.
 
 ```
+create view vw_cancelamento as 
 
+select 
+	t2.doctor_id,
+	t2.specialization,
+	t2.hospital_branch,
+	count (*) as total_atendimentos,
+	sum(case 
+			when t1.status = 'cancelled' then 1
+			else 0
+			end) as total_cancelado,
+			format(100.0 * -- round: arredondar numeros  format: formatar o numero para texto 
+				sum (case
+						when t1.status = 'cancelled' then 1
+						else 0
+						end) / nullif(count(*), 0), 'N2') as taxa_cancelamento_percentual -- nullif: nao dividir por zero: se tiver zero amigos, nem tente dividir
+from [dbo].[tb_act_appointments] as t1
+
+left join [dbo].[tb_act_doctors] as t2
+on t1.doctor_id = t2.doctor_id
+
+group by t2.doctor_id, t2.specialization, t2.hospital_branch
+
+
+
+
+select
+	*
+from vw_cancelamento
+
+order by taxa_cancelamento_percentual desc
 ```
 
 #### Resposta 2
@@ -479,27 +889,106 @@ A primeira CTE, chamada pacientes_sem_consulta, identifica os pacientes que aind
 
 ```
 
+create view vw_agendamento_consulta as 
+
+with pacientes_sem_consulta as (
+
+select
+	t1.patient_id,
+	t1.gender,
+	convert(date,t1.date_of_birth) as birth_date, -- remove a hora 
+	count(*) as total_pacientes_sem_consulta
+from [dbo].[tb_act_patients] as t1
+
+left join [dbo].[tb_act_appointments] as t2
+on t1.patient_id = t2.patient_id
+
+where t2.patient_id is null 
+
+group by t1.patient_id, t1.gender, t1.date_of_birth
+
+), 
+
+-- pacientes por idade e consultas canceladas ou no-show 
+
+pacientes_com_cancelamento_ou_noshow as (
+select
+	t1.gender,
+	count (*) as total_cancelamento_no_show,
+	datediff(year, t1.date_of_birth, getdate()) as idade,
+	t2.status 
+from [dbo].[tb_act_patients] as t1
+
+left join [dbo].[tb_act_appointments] as t2
+on t1.patient_id = t2.patient_id
+
+where t2.status in ('Cancelled', 'No-show')
+
+group by t1.gender, t2.status, 	datediff(year, t1.date_of_birth, getdate())
+
+
+
+	
+
+), 
+
+
+-- consultas_por_faixa_etaria_e_status
+
+faixas_etarias as (
+select
+	gender,
+	case
+		when idade < 18 then 'Menor de 18'
+		when idade between 18 and 29 then '18-29 anos'
+		when idade between 30 and 44 then '30-44 anos'
+		when idade between 45 and 59 then '45-59 anos'
+		when idade >= 60 then '60 ou mais'
+		else 'idade desconhecida'
+		end as faixa_etaria,
+		status, 
+		count(*) as total
+		from pacientes_com_cancelamento_ou_noshow
+
+	group by 
+			case
+		when idade < 18 then 'Menor de 18'
+		when idade between 18 and 29 then '18-29 anos'
+		when idade between 30 and 44 then '30-44 anos'
+		when idade between 45 and 59 then '45-59 anos'
+		when idade >= 60 then '60 ou mais'
+		else 'idade desconhecida'
+		end,
+		status,
+		gender
+)
+
+
+-- resultado final 
+
+select 
+	*
+from faixas_etarias
+
+
+
+select	
+	*
+from vw_agendamento_consulta
+
+order by faixa_etaria, status
 ```
 
 A segunda CTE, pacientes_com_cancelamento_ou_noshow, analisa os pacientes que tiveram consultas com status “Cancelled” ou “No-show”, ou seja, não compareceram ou cancelaram. Também foi utilizada a junção entre as tabelas de pacientes e agendamentos, com um filtro específico para esses dois status. Em seguida, foi calculada a idade dos pacientes com base na data de nascimento, e os dados foram agrupados por gênero, status da consulta e idade.
 
-```
-
-```
 
 A terceira CTE, faixas_etarias, categoriza os pacientes da CTE anterior em faixas etárias pré-definidas (como “Menor de 18”, “18–29 anos”, etc.), permitindo visualizar a distribuição de cancelamentos e no-shows de forma segmentada por idade e gênero. O agrupamento por status, gender e faixa_etaria permite uma análise cruzada entre essas variáveis.
 
 
-```
-
-```
 
 Por fim, a consulta final seleciona todos os dados da CTE faixas_etarias, retornando uma tabela que mostra, para cada combinação de faixa etária, gênero e status da consulta, o total de ocorrências registradas. Essa estrutura facilita a identificação de padrões de comportamento entre grupos específicos de pacientes, como maior incidência de no-show entre jovens ou maior número de cancelamentos entre pacientes idosos, por exemplo.
 
 
-```
-
-```
 
 #### Resposta 3
 
