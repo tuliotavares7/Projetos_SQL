@@ -289,8 +289,6 @@ A intenção, com este segundo portfólio, foi seguir consolidando meu domínio 
 
 Em breve, pretendo complementar esse trabalho com visualizações interativas e dashboards no Power BI, trazendo uma perspectiva mais visual e executiva para os insights obtidos a partir dos dados. Também será possível expandir as análises estatísticas robustas com o uso da linguagem R, aproveitando os conhecimentos adquiridos na pós-graduação stricto sensu.
 
-Para acessar o primeiro portfólio, no qual desenvolvi consultas SQL baseadas em análises comparativas e exploratórias de dados de delivery, integrando múltiplas tabelas com foco em entregas, modais logísticos, valores médios de pedidos e desempenho regional, clique aqui. As consultas envolveram junções (joins), agregações (contagem, soma, média), filtros por status e segmentações por faixas de distância, tipo de entregador e região. Além disso, utilizei CTEs para estruturar a lógica das queries, garantindo organização e clareza no processamento dos dados.
-
 ### Vamos ao assunto principal:
 
 Neste projeto, utilizo o banco de dados Olist, que contém oito tabelas principais, algumas a serem usadas para responder às perguntas propostas. Abaixo, segue a descrição de cada uma:
@@ -689,9 +687,6 @@ Além da exploração realizada com SQL, pretendo, em etapas futuras, complement
 
 Também planejo aplicar técnicas estatísticas mais avançadas, como regressões, utilizando a linguagem R, aproveitando os conhecimentos adquiridos durante a pós-graduação stricto sensu.
 
-Para acessar o primeiro portfólio, no qual desenvolvi consultas SQL baseadas em análises comparativas e exploratórias de dados de delivery, integrando múltiplas tabelas com foco em entregas, modais logísticos, valores médios de pedidos e desempenho regional, clique aqui. As consultas envolveram junções (joins), agregações (contagem, soma, média), filtros por status e segmentações por faixas de distância, tipo de entregador e região. Além disso, utilizei CTEs para estruturar a lógica das queries, garantindo organização e clareza no processamento dos dados.
-
-Disponibilizo também o segundo projeto, no qual utilizei o banco de dados Olist, composto por oito tabelas principais, para responder a perguntas estratégicas sobre comportamento de clientes, desempenho de vendedores e análise detalhada das vendas por categoria e tipo de pagamento. Por meio de consultas SQL estruturadas com CTEs, junções e agregações, explorei informações sobre clientes, produtos, pedidos, pagamentos e avaliações, aprofundando a análise dos dados de ecommerce para gerar insights comerciais relevantes.
 
 ### Vamos ao assunto principal:
 
